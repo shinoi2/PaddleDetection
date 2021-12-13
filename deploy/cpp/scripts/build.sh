@@ -17,4 +17,5 @@ cmake .. \
     -DWITH_MOT=OFF
 
 make
+make install
 echo "make finished!"
