@@ -10,7 +10,6 @@ option(WITH_MOT       "Whether to Compile MOT detector" OFF)
 
 SET(PADDLE_DIR "" CACHE PATH "Location of libraries")
 SET(PADDLE_LIB_NAME "" CACHE STRING "libpaddle_inference")
-SET(OPENCV_DIR "" CACHE PATH "Location of libraries")
 SET(CUDA_LIB "" CACHE PATH "Location of libraries")
 SET(CUDNN_LIB "" CACHE PATH "Location of libraries")
 SET(TENSORRT_INC_DIR "" CACHE PATH "Compile demo with TensorRT")
@@ -23,11 +22,14 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/ext/yaml-cpp/src/ext-yaml-cpp/i
 link_directories("${CMAKE_CURRENT_BINARY_DIR}/ext/yaml-cpp/lib")
 
 if (WITH_KEYPOINT)
-    set(SRCS src/main_keypoint.cc src/preprocess_op.cc src/object_detector.cc src/picodet_postprocess.cc src/utils.cc src/keypoint_detector.cc src/keypoint_postprocess.cc)
+    set(MAIN src/main_keypoint.cc)
+    set(SRCS src/preprocess_op.cc src/object_detector.cc src/picodet_postprocess.cc src/utils.cc src/keypoint_detector.cc src/keypoint_postprocess.cc)
 elseif (WITH_MOT)
-    set(SRCS src/main_jde.cc src/preprocess_op.cc src/object_detector.cc src/jde_detector.cc src/tracker.cc src/trajectory.cc src/lapjv.cpp src/picodet_postprocess.cc src/utils.cc)
+    set(MAIN src/main_jde.cc)
+    set(SRCS src/preprocess_op.cc src/object_detector.cc src/jde_detector.cc src/tracker.cc src/trajectory.cc src/lapjv.cpp src/picodet_postprocess.cc src/utils.cc)
 else ()
-    set(SRCS src/main.cc src/preprocess_op.cc src/object_detector.cc src/picodet_postprocess.cc src/utils.cc)
+    set(MAIN src/main.cc)
+    set(SRCS src/preprocess_op.cc src/object_detector.cc src/picodet_postprocess.cc src/utils.cc)
 endif()
 
 macro(safe_set_static_flag)
@@ -48,10 +50,6 @@ if (NOT DEFINED PADDLE_DIR OR ${PADDLE_DIR} STREQUAL "")
     message(FATAL_ERROR "please set PADDLE_DIR with -DPADDLE_DIR=/path/paddle_influence_dir")
 endif()
 message("PADDLE_DIR IS:" ${PADDLE_DIR})
-
-if (NOT DEFINED OPENCV_DIR OR ${OPENCV_DIR} STREQUAL "")
-    message(FATAL_ERROR "please set OPENCV_DIR with -DOPENCV_DIR=/path/opencv")
-endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/")
 include_directories("${PADDLE_DIR}/")
@@ -88,10 +86,10 @@ if (WIN32)
   include_directories("${PADDLE_DIR}/paddle/fluid/inference")
   include_directories("${PADDLE_DIR}/paddle/include")
   link_directories("${PADDLE_DIR}/paddle/fluid/inference")
-  find_package(OpenCV REQUIRED PATHS ${OPENCV_DIR}/build/ NO_DEFAULT_PATH)
+  find_package(OpenCV REQUIRED)
 
 else ()
-  find_package(OpenCV REQUIRED PATHS ${OPENCV_DIR}/share/OpenCV NO_DEFAULT_PATH)
+  find_package(OpenCV REQUIRED)
   include_directories("${PADDLE_DIR}/paddle/include")
   link_directories("${PADDLE_DIR}/paddle/lib")
 endif ()
@@ -227,10 +225,17 @@ if (NOT WIN32)
 endif()
 
 set(DEPS ${DEPS} ${OpenCV_LIBS})
-add_executable(main ${SRCS})
-ADD_DEPENDENCIES(main ext-yaml-cpp)
-message("DEPS:" $DEPS)
-target_link_libraries(main ${DEPS})
+
+add_library(
+    libpaddle
+    ${SRCS})
+target_link_libraries(
+    libpaddle
+    ${DEPS})
+ADD_DEPENDENCIES(libpaddle ext-yaml-cpp)
+
+add_executable(main ${MAIN})
+target_link_libraries(main libpaddle)
 
 if (WIN32 AND WITH_MKL)
     add_custom_command(TARGET main POST_BUILD
@@ -249,3 +254,7 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PADDLE_DIR}/paddle/lib/${PADDLE_LIB_NAME}.dll ./release/${PADDLE_LIB_NAME}.dll
     )
 endif()
+
+FILE(GLOB files ${files} "./include/*.h")
+INSTALL(TARGETS libpaddle DESTINATION lib)
+INSTALL(FILES ${files} DESTINATION include)
