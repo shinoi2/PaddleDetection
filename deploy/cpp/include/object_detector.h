@@ -27,10 +27,10 @@
 
 #include "paddle_inference_api.h" // NOLINT
 
-#include "include/preprocess_op.h"
-#include "include/config_parser.h"
-#include "include/utils.h"
-#include "include/picodet_postprocess.h"
+#include "preprocess_op.h"
+#include "config_parser.h"
+#include "utils.h"
+#include "picodet_postprocess.h"
 
 using namespace paddle_infer;
 

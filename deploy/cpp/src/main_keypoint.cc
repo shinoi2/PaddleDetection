@@ -31,9 +31,9 @@
 #endif
 
 #include <gflags/gflags.h>
-#include "include/keypoint_detector.h"
-#include "include/object_detector.h"
-#include "include/preprocess_op.h"
+#include "keypoint_detector.h"
+#include "object_detector.h"
+#include "preprocess_op.h"
 
 DEFINE_string(model_dir, "", "Path of object detector inference model");
 DEFINE_string(model_dir_keypoint,

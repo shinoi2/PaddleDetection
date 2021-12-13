@@ -26,9 +26,9 @@
 
 #include "paddle_inference_api.h"  // NOLINT
 
-#include "include/config_parser.h"
-#include "include/keypoint_postprocess.h"
-#include "include/preprocess_op.h"
+#include "config_parser.h"
+#include "keypoint_postprocess.h"
+#include "preprocess_op.h"
 
 using namespace paddle_infer;
 

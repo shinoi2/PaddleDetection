@@ -16,7 +16,7 @@
 #include <string>
 #include <thread>
 
-#include "include/preprocess_op.h"
+#include "preprocess_op.h"
 
 namespace PaddleDetection {
 
