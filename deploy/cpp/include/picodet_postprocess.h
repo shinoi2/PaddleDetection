@@ -21,7 +21,7 @@
 #include <ctime>
 #include <numeric>
 
-#include "include/utils.h"
+#include "utils.h"
 
 namespace PaddleDetection {
 
